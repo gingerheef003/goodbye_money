@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:goodbye_money/models/boxes.dart';
 import 'package:goodbye_money/models/category.dart';
+import 'package:goodbye_money/pages/categories.dart';
 import 'package:goodbye_money/types/widget.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -87,8 +88,7 @@ class _AddContentState extends State<AddContent> {
                   children: [
                     ListTile(
                       title: const Text('Amount'),
-                      trailing: SizedBox(
-                        width: 60,
+                      trailing: IntrinsicWidth(
                         child: TextField(
                           textAlign: TextAlign.end,
                           keyboardType: TextInputType.number,
@@ -97,9 +97,7 @@ class _AddContentState extends State<AddContent> {
                             FilteringTextInputFormatter.digitsOnly,
                           ],
                           decoration: const InputDecoration(
-                            hintText: 'Amount',
-                            // border: InputBorder.none
-                          ),
+                              hintText: 'Amount', border: InputBorder.none),
                         ),
                       ),
                     ),
@@ -111,108 +109,53 @@ class _AddContentState extends State<AddContent> {
                                 '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'))),
                     ListTile(
                       title: const Text('Note'),
-                      trailing: SizedBox(
-                        width: 60,
+                      trailing: IntrinsicWidth(
                         child: TextField(
                           textAlign: TextAlign.end,
                           controller: _noteController,
                           decoration: const InputDecoration(
-                            hintText: 'Note',
-                            // border: InputBorder.none
-                          ),
+                              hintText: 'Note', border: InputBorder.none),
                         ),
                       ),
                     ),
                     ListTile(
                         title: const Text('Category'),
-                        trailing: DropdownMenu<ExpenseCategory>(
-                          initialSelection: boxCategory.getAt(0),
-                          controller: _categoryController,
-                          inputDecorationTheme: const InputDecorationTheme(
-                              border: InputBorder.none),
-                          dropdownMenuEntries: boxCategory.values
-                              .map<DropdownMenuEntry<ExpenseCategory>>(
-                                  (dynamic cat) {
-                            ExpenseCategory category = cat as ExpenseCategory;
-                            return DropdownMenuEntry(
-                              value: category,
-                              label: category.name,
-                            );
-                          }).toList(),
-                        )),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //     const Text("Amount"),
-                    //     const Spacer(),
-                    //     Flexible(
-                    //       child: TextField(
-                    //         textAlign: TextAlign.end,
-                    //         keyboardType: TextInputType.number,
-                    //         controller: _amountController,
-                    //         inputFormatters: [
-                    //           FilteringTextInputFormatter.digitsOnly,
-                    //         ],
-                    //         decoration: const InputDecoration(
-                    //           hintText: 'Amount',
-                    //           // border: InputBorder.none
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //     const Text("Date"),
-                    //     TextButton(
-                    //         onPressed: () => selectDate(context),
-                    //         child: Text(
-                    //             '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'))
-                    //   ],
-                    // ),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //     const Text("Note"),
-                    //     const Spacer(),
-                    //     Flexible(
-                    //       // width: 100,
-                    //       child: TextField(
-                    //         textAlign: TextAlign.end,
-                    //         controller: _noteController,
-                    //         decoration: const InputDecoration(
-                    //           hintText: 'Note',
-                    //           // border: InputBorder.none
-                    //         ),
-                    //       ),
-                    //     ),
-                    //   ],
-                    // ),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //     const Text("Category"),
-                    //     DropdownMenu<ExpenseCategory>(
-                    //       initialSelection: boxCategory.getAt(0),
-                    //       controller: _categoryController,
-                    //       inputDecorationTheme: const InputDecorationTheme(
-                    //           border: InputBorder.none),
-                    //       dropdownMenuEntries: boxCategory.values
-                    //           .map<DropdownMenuEntry<ExpenseCategory>>(
-                    //               (dynamic cat) {
-                    //         ExpenseCategory category = cat as ExpenseCategory;
-                    //         return DropdownMenuEntry(
-                    //           value: category,
-                    //           label: category.name,
-                    //         );
-                    //       }).toList(),
-                    //     )
-                    //   ],
-                    // ),
+                        trailing: ValueListenableBuilder<Box>(
+                            valueListenable: boxCategory.listenable(),
+                            builder: (context, box, _) {
+                              if (box.isEmpty) {
+                                return TextButton(
+                                    onPressed: () {
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const Categories()));
+                                    },
+                                    child: const Text('Create Category'));
+                              }
+                              return DropdownMenu<ExpenseCategory>(
+                                initialSelection: boxCategory.getAt(0),
+                                controller: _categoryController,
+                                inputDecorationTheme:
+                                    const InputDecorationTheme(
+                                        border: InputBorder.none),
+                                dropdownMenuEntries: boxCategory.values
+                                    .map<DropdownMenuEntry<ExpenseCategory>>(
+                                        (dynamic cat) {
+                                  ExpenseCategory category =
+                                      cat as ExpenseCategory;
+                                  return DropdownMenuEntry(
+                                      value: category,
+                                      label: category.name,
+                                      style: ButtonStyle(
+                                          foregroundColor:
+                                              MaterialStatePropertyAll(
+                                                  category.color)));
+                                }).toList(),
+                              );
+                            })),
                   ],
                 ),
               ),
+              const SizedBox(height: 20),
+              ElevatedButton(onPressed: () {}, child: Text('Add Expense'))
             ],
           ),
         ));

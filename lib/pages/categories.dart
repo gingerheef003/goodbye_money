@@ -49,8 +49,8 @@ class _CategoriesState extends State<Categories> {
           name: _controller.text, colorValue: currentColor.value);
       setState(() {
         boxCategory.put(newCategory.name, newCategory);
-        currentColor =
-            Colors.primaries[Random().nextInt(Colors.primaries.length)];
+        currentColor = Colors.primaries[Random().nextInt(Colors.primaries.length)];
+        pickerColor = currentColor;
       });
       _controller.clear();
     }
@@ -98,14 +98,18 @@ class _CategoriesState extends State<Categories> {
                         itemBuilder: (context, index) {
                           ExpenseCategory category = box.getAt(index);
                           return ListTile(
-                            title: Text(category.name),
-                            leading: Container(
-                              width: 18,
-                              height: 18,
-                              decoration: BoxDecoration(
+                            title: Text('  ${category.name}\u00A0\u00A0',
+                                style: TextStyle(
                                   color: category.color,
-                                  shape: BoxShape.circle),
-                            ),
+                                  backgroundColor: category.color.withOpacity(0.3),
+                                )),
+                            // leading: Container(
+                            //   width: 18,
+                            //   height: 18,
+                            //   decoration: BoxDecoration(
+                            //       color: category.color,
+                            //       shape: BoxShape.circle),
+                            // ),
                             trailing: IconButton(
                               icon: const Icon(
                                 Icons.delete,
@@ -118,20 +122,27 @@ class _CategoriesState extends State<Categories> {
                                       return AlertDialog(
                                         backgroundColor: Colors.black87,
                                         title: Text.rich(TextSpan(children: [
-                                          const TextSpan(text: 'Delete Category '),
-                                          TextSpan(text: category.name, style: TextStyle(color: category.color))
+                                          const TextSpan(
+                                              text: 'Delete Category  '),
+                                          TextSpan(
+                                              text: ' ${category.name}\u00A0',
+                                              style: TextStyle(
+                                                color: category.color,
+                                                backgroundColor: category.color
+                                                    .withOpacity(0.3),
+                                              ))
                                         ])),
                                         actions: [
                                           ElevatedButton(
                                               onPressed: () =>
                                                   Navigator.pop(context),
-                                              child: Text('Cancel')),
+                                              child: const Text('Cancel')),
                                           ElevatedButton(
                                               onPressed: () {
                                                 boxCategory.deleteAt(index);
                                                 Navigator.pop(context);
                                               },
-                                              child: Text('Delete',
+                                              child: const Text('Delete',
                                                   style: TextStyle(
                                                       color: Colors.red)))
                                         ],
