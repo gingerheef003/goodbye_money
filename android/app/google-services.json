@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "249038070550",
+    "project_id": "expense-app-d0015",
+    "storage_bucket": "expense-app-d0015.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:249038070550:android:666b1de95b43e05bfa2637",
+        "android_client_info": {
+          "package_name": "com.example.goodbye_money"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCtU4gqFB6ug8MzexIm4zuzB9Aq8Ot-Pp0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

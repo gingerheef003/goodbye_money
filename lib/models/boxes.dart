@@ -1,3 +1,4 @@
 import 'package:hive/hive.dart';
 
-late Box boxCategory;
+late Box categoryBox;
+late Box expenseBox;

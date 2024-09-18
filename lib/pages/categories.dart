@@ -26,7 +26,6 @@ class _CategoriesState extends State<Categories> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     pickerColor = Colors.primaries[Random().nextInt(Colors.primaries.length)];
     currentColor = pickerColor;
@@ -44,11 +43,13 @@ class _CategoriesState extends State<Categories> {
   }
 
   void createCategory() {
+    print(categoryBox.values.map((e) => e.name));
+    print(categoryBox.values.map((e) => e.visible));
     if (_controller.text.isNotEmpty) {
       ExpenseCategory newCategory = ExpenseCategory(
           name: _controller.text, colorValue: currentColor.value);
       setState(() {
-        boxCategory.put(newCategory.name, newCategory);
+        categoryBox.put(newCategory.name, newCategory);
         currentColor = Colors.primaries[Random().nextInt(Colors.primaries.length)];
         pickerColor = currentColor;
       });
@@ -82,9 +83,10 @@ class _CategoriesState extends State<Categories> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: ValueListenableBuilder<Box>(
-                    valueListenable: boxCategory.listenable(),
+                    valueListenable: categoryBox.listenable(),
                     builder: (context, box, _) {
-                      if (box.isEmpty) {
+                      var filteredBox = box.values.where((e) => e.visible).toList();
+                      if (filteredBox.isEmpty) {
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 64),
                           child: Center(
@@ -94,63 +96,66 @@ class _CategoriesState extends State<Categories> {
                       }
                       return ListView.builder(
                         shrinkWrap: true,
-                        itemCount: box.length,
+                        itemCount: filteredBox.length,
                         itemBuilder: (context, index) {
-                          ExpenseCategory category = box.getAt(index);
-                          return ListTile(
-                            title: Text('  ${category.name}\u00A0\u00A0',
-                                style: TextStyle(
-                                  color: category.color,
-                                  backgroundColor: category.color.withOpacity(0.3),
-                                )),
-                            // leading: Container(
-                            //   width: 18,
-                            //   height: 18,
-                            //   decoration: BoxDecoration(
-                            //       color: category.color,
-                            //       shape: BoxShape.circle),
-                            // ),
-                            trailing: IconButton(
-                              icon: const Icon(
-                                Icons.delete,
-                                color: Colors.red,
+                          ExpenseCategory category = filteredBox[index];
+                          if(category.visible) {
+                            return ListTile(
+                              title: Text('  ${category.name}\u00A0\u00A0',
+                                  style: TextStyle(
+                                    color: category.color,
+                                    backgroundColor: category.color.withOpacity(0.3),
+                                  )),
+                              // leading: Container(
+                              //   width: 18,
+                              //   height: 18,
+                              //   decoration: BoxDecoration(
+                              //       color: category.color,
+                              //       shape: BoxShape.circle),
+                              // ),
+                              trailing: IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          backgroundColor: Colors.black87,
+                                          title: Text.rich(TextSpan(children: [
+                                            const TextSpan(
+                                                text: 'Delete Category  '),
+                                            TextSpan(
+                                                text: ' ${category.name}\u00A0',
+                                                style: TextStyle(
+                                                  color: category.color,
+                                                  backgroundColor: category.color
+                                                      .withOpacity(0.3),
+                                                ))
+                                          ])),
+                                          actions: [
+                                            ElevatedButton(
+                                                onPressed: () =>
+                                                    Navigator.pop(context),
+                                                child: const Text('Cancel')),
+                                            ElevatedButton(
+                                                onPressed: () {
+                                                  category.visible = false;
+                                                  category.save();
+                                                  Navigator.pop(context);
+                                                },
+                                                child: const Text('Delete',
+                                                    style: TextStyle(
+                                                        color: Colors.red)))
+                                          ],
+                                        );
+                                      });
+                                },
                               ),
-                              onPressed: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        backgroundColor: Colors.black87,
-                                        title: Text.rich(TextSpan(children: [
-                                          const TextSpan(
-                                              text: 'Delete Category  '),
-                                          TextSpan(
-                                              text: ' ${category.name}\u00A0',
-                                              style: TextStyle(
-                                                color: category.color,
-                                                backgroundColor: category.color
-                                                    .withOpacity(0.3),
-                                              ))
-                                        ])),
-                                        actions: [
-                                          ElevatedButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context),
-                                              child: const Text('Cancel')),
-                                          ElevatedButton(
-                                              onPressed: () {
-                                                boxCategory.deleteAt(index);
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Delete',
-                                                  style: TextStyle(
-                                                      color: Colors.red)))
-                                        ],
-                                      );
-                                    });
-                              },
-                            ),
-                          );
+                            );
+                          }
                         },
                       );
                     })),
@@ -205,7 +210,10 @@ class _CategoriesState extends State<Categories> {
                         child: TextField(
                       controller: _controller,
                       decoration:
-                          const InputDecoration(hintText: 'Category Name'),
+                          const InputDecoration(
+                            hintText: 'Category Name',
+                            border: InputBorder.none
+                          ),
                     )),
                     IconButton(
                         onPressed: createCategory,

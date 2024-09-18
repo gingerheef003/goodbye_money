@@ -1,11 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:goodbye_money/models/boxes.dart';
 import 'package:goodbye_money/models/category.dart';
+import 'package:goodbye_money/models/expense.dart';
 import 'package:goodbye_money/pages/categories.dart';
 import 'package:goodbye_money/types/widget.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+const Uuid uuid = Uuid();
 
 class Add extends WidgetWithTitle {
   const Add({super.key}) : super(title: "Add");
@@ -28,6 +31,7 @@ class _AddContentState extends State<AddContent> {
   late TextEditingController _noteController;
   late TextEditingController _categoryController;
 
+
   // List<Category> categories = [];
   int _selectedCategoryIndex = 0;
   DateTime _selectedDate = DateTime.now();
@@ -45,6 +49,33 @@ class _AddContentState extends State<AddContent> {
       setState(() {
         _selectedDate = picked;
       });
+    }
+  }
+
+  void createExpense() {
+    if(_amountController.text.isNotEmpty && _categoryController.text.isNotEmpty && _noteController.text.isNotEmpty) {
+      String id = uuid.v4();
+      setState(() {
+        expenseBox.put(id, Expense(
+          id: id,
+          amount: int.parse(_amountController.text),
+          date: _selectedDate,
+          category: _categoryController.text,
+          note: _noteController.text
+        ));
+        _amountController.text = '';
+        _noteController.text = '';
+      });
+    } else {
+      const snack = SnackBar(
+        content: Text('Enter all fields'),
+        behavior: SnackBarBehavior.floating,
+        showCloseIcon: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8))
+        ),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snack);
     }
   }
 
@@ -108,20 +139,9 @@ class _AddContentState extends State<AddContent> {
                             child: Text(
                                 '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'))),
                     ListTile(
-                      title: const Text('Note'),
-                      trailing: IntrinsicWidth(
-                        child: TextField(
-                          textAlign: TextAlign.end,
-                          controller: _noteController,
-                          decoration: const InputDecoration(
-                              hintText: 'Note', border: InputBorder.none),
-                        ),
-                      ),
-                    ),
-                    ListTile(
                         title: const Text('Category'),
                         trailing: ValueListenableBuilder<Box>(
-                            valueListenable: boxCategory.listenable(),
+                            valueListenable: categoryBox.listenable(),
                             builder: (context, box, _) {
                               if (box.isEmpty) {
                                 return TextButton(
@@ -131,12 +151,12 @@ class _AddContentState extends State<AddContent> {
                                     child: const Text('Create Category'));
                               }
                               return DropdownMenu<ExpenseCategory>(
-                                initialSelection: boxCategory.getAt(0),
+                                initialSelection: categoryBox.getAt(0),
                                 controller: _categoryController,
                                 inputDecorationTheme:
                                     const InputDecorationTheme(
                                         border: InputBorder.none),
-                                dropdownMenuEntries: boxCategory.values
+                                dropdownMenuEntries: categoryBox.values
                                     .map<DropdownMenuEntry<ExpenseCategory>>(
                                         (dynamic cat) {
                                   ExpenseCategory category =
@@ -151,11 +171,23 @@ class _AddContentState extends State<AddContent> {
                                 }).toList(),
                               );
                             })),
+                    ListTile(
+                      title: const Text('Note'),
+                      trailing: IntrinsicWidth(
+                        child: TextField(
+                          textAlign: TextAlign.end,
+                          controller: _noteController,
+                          decoration: const InputDecoration(
+                              hintText: 'Note', border: InputBorder.none),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
+                
               ),
               const SizedBox(height: 20),
-              ElevatedButton(onPressed: () {}, child: Text('Add Expense'))
+              ElevatedButton(onPressed: createExpense, child: const Text('Add Expense'))
             ],
           ),
         ));
